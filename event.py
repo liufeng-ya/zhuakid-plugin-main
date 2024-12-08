@@ -4,6 +4,7 @@ import random
 from pathlib import Path
 from nonebot.adapters.onebot.v11 import MessageSegment
 from .function import open_data, save_data, print_zhua, time_decode
+from .config import *
 #事件系统
 #在道具使用和普通的抓kid中会触发
 
@@ -23,11 +24,25 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
         with open(forest_path, 'r', encoding='utf-8') as f:
             stuckdata = json.load(f)
 
+        #打开矿洞被困名单
+        crystalStuckdata = {}
+        with open(crystal_path, 'r', encoding='utf-8') as f:
+            crystalStuckdata = json.load(f)
+
         #如果不在森林被困名单里
         if(user_id in stuckdata):
             if(current_time >= next_time_r):
                 data[user_id]["buff"] = "normal"
                 del stuckdata[user_id]
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in data[str(user_id)]):
+                    data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in data[str(user_id)]):
+                    data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if data[str(user_id)]["lucky_times"] >= 0:
+                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -38,12 +53,68 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
                 await message.finish("恭喜你成功脱险....", at_sender=True)
 
             else:
-
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in data[str(user_id)]):
+                    data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in data[str(user_id)]):
+                    data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if data[str(user_id)]["lucky_times"] >= 0:
+                    data[str(user_id)]["lucky_times"] += 1
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
                 await message.finish("你还处在危险之中...", at_sender=True)
-            
+        elif(user_id in crystalStuckdata):
+            if(current_time >= next_time_r):
+                data[user_id]["buff"] = "normal"
+                del crystalStuckdata[user_id]
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in data[str(user_id)]):
+                    data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in data[str(user_id)]):
+                    data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if data[str(user_id)]["lucky_times"] >= 0:
+                    data[str(user_id)]["lucky_times"] += 1
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+                #写入山洞被困名单
+                with open(crystal_path, 'w', encoding='utf-8') as f:
+                    json.dump(crystalStuckdata, f, indent=4)
+
+                await message.finish("恭喜你成功脱险....", at_sender=True)
+
+            else:
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in data[str(user_id)]):
+                    data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in data[str(user_id)]):
+                    data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if data[str(user_id)]["lucky_times"] >= 0:
+                    data[str(user_id)]["lucky_times"] += 1
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)
+                await message.finish("你还处在危险之中...", at_sender=True)
+
         else:
             data[user_id]["buff"] = "normal"
             data[user_id]['next_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            #正面buff检测逻辑
+            #没有就先加上
+            if(not 'buff2' in data[str(user_id)]):
+                data[str(user_id)]['buff2'] = 'normal'
+            if(not 'lucky_times' in data[str(user_id)]):
+                data[str(user_id)]['lucky_times'] = 0
+            #幸运
+            if data[str(user_id)]["lucky_times"] >= 0:
+                data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
@@ -60,6 +131,15 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
             if(current_time >= next_time_r):
                 data[user_id]["buff"] = "normal"
                 del stuckdata[user_id]
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in data[str(user_id)]):
+                    data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in data[str(user_id)]):
+                    data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if data[str(user_id)]["lucky_times"] >= 0:
+                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -70,12 +150,32 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
                 await message.finish("看了半天你还是没想明白这是什么东西，但你意识到不能再在原地停留了", at_sender=True)
 
             else:
-
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in data[str(user_id)]):
+                    data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in data[str(user_id)]):
+                    data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if data[str(user_id)]["lucky_times"] >= 0:
+                    data[str(user_id)]["lucky_times"] += 1
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(data, f, indent=4)   
                 await message.finish("你还是感到很困惑", at_sender=True)
             
         else:
             data[user_id]["buff"] = "normal"
             data[user_id]['next_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            #正面buff检测逻辑
+            #没有就先加上
+            if(not 'buff2' in data[str(user_id)]):
+                data[str(user_id)]['buff2'] = 'normal'
+            if(not 'lucky_times' in data[str(user_id)]):
+                data[str(user_id)]['lucky_times'] = 0
+            #幸运
+            if data[str(user_id)]["lucky_times"] >= 0:
+                data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
@@ -88,8 +188,9 @@ async def event_happen(user_data, user_id, message):
     #读取猎场编号
     liechang_number = user_data[user_id].get('lc','1')
 
-    #一号猎场：啥事件没有
-    if(liechang_number=='1'): return
+    #一号猎场
+    if(liechang_number=='1'): 
+        await PlainStuck(user_data,user_id,message)
 
     #二号猎场
     if(liechang_number=='2'):
@@ -99,7 +200,62 @@ async def event_happen(user_data, user_id, message):
     if(liechang_number=='3'):
         await CrystalStuck(user_data,user_id,message)
 
+#一号猎场事件
+async def PlainStuck(user_data, user_id, message):
+    ######其他事件#####
+    rnd = random.randint(1,1000)
+    
+    #遇到金矿
+    if(rnd <= 25):
+        #奖励刺儿
+        spike = random.randint(100,200)
+        user_data[user_id]['spike'] += spike
+        #写入主数据表
+        with open(user_path, 'w', encoding='utf-8') as f:
+            json.dump(user_data, f, indent=4)
+        #发送消息
+        await message.finish(f"呀，你在森林里发现了一个小金矿，本次奖励{spike}刺儿！", at_sender=True)
+    
+    if(rnd<=30):#30
+        #判断是否开辟道具栏
+        if(not 'item' in user_data[str(user_id)]):
+            user_data[str(user_id)]['item'] = {}
 
+        #判断是否有开辟该道具
+        if(not '神秘碎片' in user_data[str(user_id)]['item']):
+            user_data[str(user_id)]['item']['神秘碎片'] = 0
+
+        if (user_data[user_id]['item']['神秘碎片'] < 7):
+            current_time = datetime.datetime.now()
+            next_time = current_time + datetime.timedelta(minutes=60)
+            user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
+            user_data[user_id]['item']['神秘碎片'] += 1  #给碎片
+
+            #写入主数据表
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            #发送消息
+            await message.finish("你在一个人迹罕至的地方捡到了一个泛着蓝光的神秘碎片，出于好奇和困惑你在此观察了一个小时\n", at_sender=True)
+        else:
+            return
+    
+    if(rnd<=40):#40
+        #判断是否开辟道具栏
+        if(not 'item' in user_data[str(user_id)]):
+            user_data[str(user_id)]['item'] = {}
+
+        #判断是否有开辟该道具
+        if(not '幸运药水' in user_data[str(user_id)]['item']):
+            user_data[str(user_id)]['item']['幸运药水'] = 0
+
+        user_data[user_id]['item']['幸运药水'] += 1
+        #写入主数据表
+        with open(user_path, 'w', encoding='utf-8') as f:
+            json.dump(user_data, f, indent=4)
+        #发送消息
+        await message.finish("你捡到了一瓶奇怪的药水，似乎是别人遗留下来的？\n", at_sender=True)
+    else:
+        return
 #二号猎场事件
 async def ForestStuck(user_data, user_id, message):
 
@@ -129,6 +285,15 @@ async def ForestStuck(user_data, user_id, message):
             user_data[user_id]['buff'] = 'lost'
             #加入森林被困名单
             stuckdata[user_id] = '2'
+            #正面buff检测逻辑
+            #没有就先加上
+            if(not 'buff2' in user_data[str(user_id)]):
+                user_data[str(user_id)]['buff2'] = 'normal'
+            if(not 'lucky_times' in user_data[str(user_id)]):
+                user_data[str(user_id)]['lucky_times'] = 0
+            #幸运
+            if user_data[str(user_id)]["lucky_times"] >= 0:
+                user_data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(user_data, f, indent=4)
@@ -140,25 +305,36 @@ async def ForestStuck(user_data, user_id, message):
 
     else:
         ######其他事件#####
-        rnd = random.randint(1,100)
+        rnd = random.randint(1,1000)
+        
         #遇到金矿
-        if(rnd <= 3):
+        if(rnd <= 25):
             #奖励刺儿
-            spike = random.randint(400,800)
+            spike = random.randint(100,200)
             user_data[user_id]['spike'] += spike
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(user_data, f, indent=4)
             #发送消息
             await message.finish(f"呀，你在森林里发现了一个小金矿，本次奖励{spike}刺儿！", at_sender=True)
+        
         #遇到被困人员
-        if(rnd <= 15):
+        if(rnd <= 150): 
             if(len(stuckdata) >= 1):
                 save_id = random.choice(list(stuckdata.keys()))
                 if(stuckdata[save_id]!='2'): return
-                user_data[user_id]['spike'] += 25
+                user_data[user_id]['spike'] += 50
                 user_data[save_id]['next_time'] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")   #将下次的时间重置成当前
                 del stuckdata[save_id]
+                #正面buff检测逻辑
+                #没有就先加上
+                if(not 'buff2' in user_data[str(user_id)]):
+                    user_data[str(user_id)]['buff2'] = 'normal'
+                if(not 'lucky_times' in user_data[str(user_id)]):
+                    user_data[str(user_id)]['lucky_times'] = 0
+                #幸运
+                if user_data[str(user_id)]["lucky_times"] >= 0:
+                    user_data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(user_data, f, indent=4)
@@ -167,13 +343,13 @@ async def ForestStuck(user_data, user_id, message):
                     json.dump(stuckdata, f, indent=4)
 
                 #发送消息
-                await message.finish("恭喜你救出了森林里的"+MessageSegment.at(save_id)+"\n本次奖励25刺儿", at_sender=True)
+                await message.finish("恭喜你救出了森林里的"+MessageSegment.at(save_id)+"\n本次奖励50刺儿", at_sender=True)
             else:
 
                 #没有需要救的人就结束事件，正常抓kid
                 return
         #受伤事件
-        if(rnd<=25):
+        if(rnd<=250):#250
             #受伤一小时，在此期间什么都干不了
             current_time = datetime.datetime.now()
             next_time = current_time + datetime.timedelta(minutes=60)
@@ -181,6 +357,15 @@ async def ForestStuck(user_data, user_id, message):
             user_data[user_id]['buff'] = 'lost'
             #加入森林被困名单
             stuckdata[user_id] = '2'
+            #正面buff检测逻辑
+            #没有就先加上
+            if(not 'buff2' in user_data[str(user_id)]):
+                user_data[str(user_id)]['buff2'] = 'normal'
+            if(not 'lucky_times' in user_data[str(user_id)]):
+                user_data[str(user_id)]['lucky_times'] = 0
+            #幸运
+            if user_data[str(user_id)]["lucky_times"] >= 0:
+                user_data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(user_data, f, indent=4)
@@ -198,7 +383,7 @@ async def ForestStuck(user_data, user_id, message):
 
             #发送消息
             await message.finish(random.choice(text)+"你需要原地等待一个小时", at_sender=True)
-        if(rnd<=27):
+        if(rnd<=255):
             #判断是否开辟道具栏
             if(not 'item' in user_data[str(user_id)]):
                 user_data[str(user_id)]['item'] = {}
@@ -207,16 +392,21 @@ async def ForestStuck(user_data, user_id, message):
             if(not '神秘碎片' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['神秘碎片'] = 0
 
-            if(user_data[user_id]['item']['神秘碎片'] < 10):
+            if (user_data[user_id]['item']['神秘碎片'] < 7):
                 current_time = datetime.datetime.now()
                 next_time = current_time + datetime.timedelta(minutes=60)
                 user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
                 user_data[user_id]['buff'] = 'confuse'
                 user_data[user_id]['item']['神秘碎片'] += 1  #给碎片
 
+                #加入森林被困名单
+                stuckdata[user_id] = '2'
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(user_data, f, indent=4)
+                #写入森林被困名单
+                with open(forest_path, 'w', encoding='utf-8') as f:
+                    json.dump(stuckdata, f, indent=4)
                 #发送消息
                 await message.finish("你捡到了一个泛着蓝光的神秘碎片，出于好奇和困惑你在此观察了一个小时\n或许有人发现你的时候...你才会停止观察", at_sender=True)
             else:
@@ -228,33 +418,53 @@ async def ForestStuck(user_data, user_id, message):
 async def CrystalStuck(user_data, user_id, message):
     #打开矿洞被困名单(还没想好写点什么)
     crystalStuckdata = {}
-    with open(forest_path, 'r', encoding='utf-8') as f:
+    with open(crystal_path, 'r', encoding='utf-8') as f:
         crystalStuckdata = json.load(f)
     #是否拥有10个碎片
     if('item' in user_data[user_id]):
         if(user_data[user_id]['item'].get('神秘碎片',0) < 10):
             await message.finish("在远古的水晶矿洞前，风轻轻吹过，岩石间传来阵阵低语。眼前的巨大门扉上镶嵌着神秘的符文，发出幽幽的光辉。你注意到面前门上的部分符文与你手上的碎片相契合\n或许......收集足够的碎片就可以打开这扇门？", at_sender=True)
     
+
     data2 = {}
     with open(user_liste2, 'r', encoding='utf-8') as f:
         data2 = json.load(f)
     
     if(str(user_id) in data2):
-        num_of_lc2_level5 = 0
+        num_of_level5 = 0
         for k in data2[str(user_id)].keys():
             level = k[0]
             if int(level)==5:
-                num_of_lc2_level5 += 1
+                num_of_level5 += 1
         
-        if num_of_lc2_level5 < 5:
-            await message.finish("水晶矿洞内传来了强大的灵力，这股力量使你无法前进。或许......多带几个第二猎场的高等级kid可以抵御这股力量？", at_sender=True)
+        #一号猎场进度
+        for k, v in kid_name_list.items():
+            #收集数
+            for name in v:
+                for j in user_data[str(user_id)]:
+                    if(name.lower()==j.lower()):
+                        if int(k)==5:
+                            num_of_level5 += 1
+        
+        if num_of_level5 < 15:
+            await message.finish("水晶矿洞内传来了强大的灵力，这股力量使你无法前进。或许......多带几个猎场的高等级kid可以抵御这股力量？", at_sender=True)
     
     ######其他事件#####
     rnd = random.randint(1,100)
+    if(user_data[str(user_id)]['spike'] >= 10000):
+        rnd = random.randint(1,80)
     if user_data[user_id]['buff'] == 'illusory':
-         rnd = random.randint(16,75)
+        rnd = random.randint(16,70)
+        if(user_data[str(user_id)]['spike'] >= 10000):
+            rnd = random.randint(1,60)
+    if user_data[user_id]['buff2'] == 'lucky':
+        while True:
+            rnd_value = random.randint(1, 100)
+            if 1 <= rnd_value <= 30 or 46 <= rnd_value <= 100:
+                break
+        rnd = rnd_value
     #抓到了特殊的道具
-    if(rnd <= 15):
+    if(rnd <= 10):#10
         current_time = datetime.datetime.now()
         next_time = current_time + datetime.timedelta(minutes=30)
         user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -342,18 +552,27 @@ async def CrystalStuck(user_data, user_id, message):
             else:
                 await message.finish(f"你发现了其他探险者在此遗落的一个万能解药，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
     #受伤事件
-    if(rnd<=35):
+    if(rnd<=25):#25
         #受伤一小时，在此期间什么都干不了
         current_time = datetime.datetime.now()
         next_time = current_time + datetime.timedelta(minutes=90)
         user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
         user_data[user_id]['buff'] = 'lost'
-        #加入森林被困名单
+        #加入山洞被困名单
         crystalStuckdata[user_id] = '3'
+        #正面buff检测逻辑
+        #没有就先加上
+        if(not 'buff2' in user_data[str(user_id)]):
+            user_data[str(user_id)]['buff2'] = 'normal'
+        if(not 'lucky_times' in user_data[str(user_id)]):
+            user_data[str(user_id)]['lucky_times'] = 0
+        #幸运
+        if user_data[str(user_id)]["lucky_times"] >= 0:
+            user_data[str(user_id)]["lucky_times"] += 1
         #写入主数据表
         with open(user_path, 'w', encoding='utf-8') as f:
             json.dump(user_data, f, indent=4)
-        #写入森林被困名单
+        #写入山洞被困名单
         with open(crystal_path, 'w', encoding='utf-8') as f:
             json.dump(crystalStuckdata, f, indent=4)
 
@@ -365,16 +584,51 @@ async def CrystalStuck(user_data, user_id, message):
         ]
         #发送消息
         await message.finish(random.choice(text)+"你需要原地等待90分钟", at_sender=True)
-    
+        
+    #挖矿事件
+    if(rnd<=30): #30
+        #首先玩家没有buff/debuff时才会随机触发
+        if user_data[user_id]['buff'] != 'unlucky':
+            #遇到水晶矿
+            rnd_crystal = random.randint(1,100)
+            if(rnd_crystal <= 50):
+                #奖励刺儿
+                spike = 100
+                user_data[user_id]['spike'] += spike
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(user_data, f, indent=4)
+                #发送消息
+                await message.finish(f"呀，你在矿洞里发现了一个小型水晶矿。\n这种是较为常见的黄色水晶，不过作为水晶来讲也是很值钱了。\n本次奖励{spike}刺儿！", at_sender=True)
+            elif(rnd_crystal <= 90):
+                #奖励刺儿
+                spike = 200
+                user_data[user_id]['spike'] += spike
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(user_data, f, indent=4)
+                #发送消息
+                await message.finish(f"呀，你在矿洞里发现了一个小型水晶矿。\n这种是不太常见的蓝色水晶，是较为珍贵的水晶之一。\n本次奖励{spike}刺儿！", at_sender=True)
+            elif(rnd_crystal <= 100):
+                #奖励刺儿
+                spike = 500
+                user_data[user_id]['spike'] += spike
+                #写入主数据表
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(user_data, f, indent=4)
+                #发送消息
+                await message.finish(f"呀，你在矿洞里发现了一个小型水晶矿。\n这种是相当稀有的紫色水晶，是极为珍贵的水晶之一。\n本次奖励{spike}刺儿！", at_sender=True)
+        else:
+            return
     #debuff事件
-    if(rnd<=50):
+    if(rnd<=45): #45
         #首先玩家没有buff/debuff时才会随机触发
         if user_data[user_id]['buff'] == 'normal':
             #判断是否开辟恢复时间栏
             current_time = datetime.datetime.now()
             if(not 'next_recover_time' in user_data[str(user_id)]):
                 user_data[str(user_id)]['next_recover_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            rnd_debuff = random.randint(1,2)
+            rnd_debuff = random.randint(1,3)
             if rnd_debuff==1:
                 #设定恢复时长为4小时后
                 next_recover_time = current_time + datetime.timedelta(hours=4)
@@ -389,9 +643,21 @@ async def CrystalStuck(user_data, user_id, message):
                 next_recover_time = current_time + datetime.timedelta(hours=4)
                 user_data[user_id]['next_recover_time'] = next_recover_time.strftime("%Y-%m-%d %H:%M:%S")
                 user_data[user_id]['buff'] = 'poisoned'
+                #虽说让幸运buff消失是不可能事件，但我还是想写上
+                user_data[str(user_id)]["buff2"]='normal'
+                user_data[str(user_id)]["lucky_times"] = 0
                 with open(user_path, 'w', encoding='utf-8') as f:
                         json.dump(user_data, f, indent=4)
                 await message.finish("矿洞的墙壁上的植物似乎在释放有毒气体，你中毒了，抓kid能力只剩1成，接下来4小时内在抓到kid时不会获得刺儿了。\n不过幸运地，这4小时内你应该不会获得其他debuff了。", at_sender=True)
+            
+            if rnd_debuff==3:
+                #设定恢复时长为4小时后
+                next_recover_time = current_time + datetime.timedelta(hours=4)
+                user_data[user_id]['next_recover_time'] = next_recover_time.strftime("%Y-%m-%d %H:%M:%S")
+                user_data[user_id]['buff'] = 'unlucky'
+                with open(user_path, 'w', encoding='utf-8') as f:
+                        json.dump(user_data, f, indent=4)
+                await message.finish("你不知道怎么回事，感觉像是被矿洞内的脏东西附身了，似乎有点不幸，接下来4小时内你不会再在此猎场内挖到宝石矿了。\n不过幸运地，这4小时内你应该不会获得其他debuff了。", at_sender=True)
         #否则就正常抓一次
         else:
             return
