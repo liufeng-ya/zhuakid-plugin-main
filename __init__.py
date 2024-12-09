@@ -295,6 +295,7 @@ async def timeClear_Admin(bot: Bot, event: GroupMessageEvent, arg: Message = Com
     next_time_r = current_time + datetime.timedelta(seconds=1)
     data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
     data[str(user_id)]['next_clock_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
+    data[str(user_id)]['work_end_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     #写入文件
     with open(user_path / file_name, 'w', encoding='utf-8') as f:
@@ -413,6 +414,28 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
 
             #读取信息
             next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
+            
+            #加工饰品时无法抓kid
+            #防止没有status这个键
+            if ('status' in data[str(user_id)]):
+                status = data[str(user_id)].get('status')
+            else:
+                status = 'normal'
+
+            if(status =='working'): 
+                if(not 'work_end_time' in data[str(user_id)]):
+                    data[str(user_id)]['work_end_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                current_time = datetime.datetime.now()
+                work_end_time = datetime.datetime.strptime(data.get(str(user_id)).get('work_end_time'), "%Y-%m-%d %H:%M:%S")
+                if current_time < work_end_time:
+                    text = time_text(str(work_end_time-current_time))
+                    await catch.finish(f"你还在加工饰品，还需要{text}", at_sender=True)
+                #时间过了自动恢复正常
+                else:
+                    data[str(user_id)]['status'] = 'normal'
+                    with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
+            
             #如果受伤了则无法抓
             if(data[str(user_id)].get("buff")=="hurt"): 
                 if(current_time < next_time_r):
@@ -1343,7 +1366,41 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
 
             #一些啥都干不了的buff
+            if ('status' in data[str(user_id)]):
+                status = data[str(user_id)].get('status')
+            else:
+                status = 'normal'
+
             if(data[str(user_id)].get('buff')=='lost'): return
+            elif(data[str(user_id)].get('buff')=='confuse'): return
+
+            #刺儿饰品的使用判定，要写在加工物品的判定之前
+            if(use_item_name.lower()=="刺儿饰品"):
+                if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
+                    spike = random.randint(1030,1145)
+                    data[user_id]['spike'] += spike
+                    data[str(user_id)]["item"][use_item_name] -= 1
+                    if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
+                    #写入文件
+                    with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
+                    text = str(spike)
+                    await daoju.finish(f"恭喜！这个小饰品卖出了{text}刺儿！", at_sender=True)
+                else:
+                    await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+
+            #加工饰品时无法使用道具
+            if(status =='working'): 
+                current_time = datetime.datetime.now()
+                work_end_time = datetime.datetime.strptime(data.get(str(user_id)).get('work_end_time'), "%Y-%m-%d %H:%M:%S")
+                if current_time < work_end_time:
+                    text = time_text(str(work_end_time-current_time))
+                    await daoju.finish(f"你还在加工饰品，还需要{text}", at_sender=True)
+                #时间过了自动恢复正常
+                else:
+                    data[str(user_id)]['status'] = 'normal'
+                    with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
 
             #如果受伤了则无法使用道具(时间秒表除外)
             if(data[str(user_id)].get("buff")=="hurt"): 
@@ -1352,7 +1409,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
                 if(current_time < next_time_r):
                     delta_time = next_time_r - current_time
-                    await daoju.finish(f"你受伤了，需要等{time_text(delta_time)}才能抓")
+                    await daoju.finish(f"你受伤了，需要等{time_text(delta_time)}才能继续")
                 else:
                     data[str(user_id)]["buff"] = "normal"
 
@@ -1374,6 +1431,33 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                         await daoju.finish(f"不良状态已清除", at_sender=True)    
                     else:
                         await daoju.finish(f"你现在没有不良状态", at_sender=True)               
+                else:
+                    await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+            
+            if(use_item_name=="刺儿加工器"):
+                if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
+
+                    """
+                    刺儿加工器：使用后进入4h道具加工期，期间不能抓kid，不能用道具(但是立刻给饰品)
+                    """
+
+                    #首先判定有没有开辟这一栏
+                    if (not '刺儿饰品' in data[str(user_id)].get("item")):
+                        data[str(user_id)]["item"]['刺儿饰品'] = 0  
+                    
+                    current_time = datetime.datetime.now()
+                    if(not 'work_end_time' in data[str(user_id)]):
+                        data[str(user_id)]['work_end_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
+                    data[str(user_id)]["item"]['刺儿饰品'] += 1    #直接给饰品
+                    work_end_time = current_time + datetime.timedelta(hours=4)
+                    data[str(user_id)]['work_end_time'] = time_decode(work_end_time)
+                    data[str(user_id)]['status'] = 'working'
+                    data[str(user_id)]["item"][use_item_name] -= 1    
+                    if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
+                    #写入文件
+                    with open(user_path / file_name, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, indent=4)
+                    await daoju.finish(f"使用成功，预计需要加工4小时。", at_sender=True)
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
             
@@ -1685,6 +1769,8 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                     await daoju.finish("使用成功，你获得了200个刺儿", at_sender=True)
                 else:
                     await daoju.finish(f"你现在没有{use_item_name}", at_sender=True)
+            
+            
                 
                 #下面这一大段都不用了
                 '''
