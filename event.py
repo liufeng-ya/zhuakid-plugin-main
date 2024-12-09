@@ -11,6 +11,7 @@ from .config import *
 pvp_path = Path() / "data" / "UserList" / "pvp.json"
 user_path = Path() / "data" / "UserList" / "UserData.json"
 user_liste2 = Path() / "data" / "UserList" / "UserList2.json"
+user_liste3 = Path() / "data" / "UserList" / "UserList3.json"
 forest_path = Path() / "data" / "UserList" / "Forest.json"
 crystal_path = Path() / "data" / "UserList" / "Crystal.json"
 
@@ -31,18 +32,19 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
 
         #如果不在森林被困名单里
         if(user_id in stuckdata):
+            #正面buff检测逻辑
+            #没有就先加上
+            if(not 'buff2' in data[str(user_id)]):
+                data[str(user_id)]['buff2'] = 'normal'
+            if(not 'lucky_times' in data[str(user_id)]):
+                data[str(user_id)]['lucky_times'] = 0
+            #幸运
+            if data[str(user_id)]["lucky_times"] >= 0:
+                data[str(user_id)]["lucky_times"] += 1
+            
             if(current_time >= next_time_r):
                 data[user_id]["buff"] = "normal"
                 del stuckdata[user_id]
-                #正面buff检测逻辑
-                #没有就先加上
-                if(not 'buff2' in data[str(user_id)]):
-                    data[str(user_id)]['buff2'] = 'normal'
-                if(not 'lucky_times' in data[str(user_id)]):
-                    data[str(user_id)]['lucky_times'] = 0
-                #幸运
-                if data[str(user_id)]["lucky_times"] >= 0:
-                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -53,32 +55,23 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
                 await message.finish("恭喜你成功脱险....", at_sender=True)
 
             else:
-                #正面buff检测逻辑
-                #没有就先加上
-                if(not 'buff2' in data[str(user_id)]):
-                    data[str(user_id)]['buff2'] = 'normal'
-                if(not 'lucky_times' in data[str(user_id)]):
-                    data[str(user_id)]['lucky_times'] = 0
-                #幸运
-                if data[str(user_id)]["lucky_times"] >= 0:
-                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
                 await message.finish("你还处在危险之中...", at_sender=True)
         elif(user_id in crystalStuckdata):
+            #正面buff检测逻辑
+            #没有就先加上
+            if(not 'buff2' in data[str(user_id)]):
+                data[str(user_id)]['buff2'] = 'normal'
+            if(not 'lucky_times' in data[str(user_id)]):
+                data[str(user_id)]['lucky_times'] = 0
+            #幸运
+            if data[str(user_id)]["lucky_times"] >= 0:
+                data[str(user_id)]["lucky_times"] += 1
             if(current_time >= next_time_r):
                 data[user_id]["buff"] = "normal"
                 del crystalStuckdata[user_id]
-                #正面buff检测逻辑
-                #没有就先加上
-                if(not 'buff2' in data[str(user_id)]):
-                    data[str(user_id)]['buff2'] = 'normal'
-                if(not 'lucky_times' in data[str(user_id)]):
-                    data[str(user_id)]['lucky_times'] = 0
-                #幸运
-                if data[str(user_id)]["lucky_times"] >= 0:
-                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -89,15 +82,6 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
                 await message.finish("恭喜你成功脱险....", at_sender=True)
 
             else:
-                #正面buff检测逻辑
-                #没有就先加上
-                if(not 'buff2' in data[str(user_id)]):
-                    data[str(user_id)]['buff2'] = 'normal'
-                if(not 'lucky_times' in data[str(user_id)]):
-                    data[str(user_id)]['lucky_times'] = 0
-                #幸运
-                if data[str(user_id)]["lucky_times"] >= 0:
-                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -113,7 +97,7 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
             if(not 'lucky_times' in data[str(user_id)]):
                 data[str(user_id)]['lucky_times'] = 0
             #幸运
-            if data[str(user_id)]["lucky_times"] >= 0:
+            if data[str(user_id)]["lucky_times"] >= 0  and data[str(user_id)]['buff2'] == 'lucky':
                 data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
@@ -125,21 +109,22 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
         stuckdata = {}
         with open(forest_path, 'r', encoding='utf-8') as f:
             stuckdata = json.load(f)
-
+        
+        #正面buff检测逻辑
+        #没有就先加上
+        if(not 'buff2' in data[str(user_id)]):
+            data[str(user_id)]['buff2'] = 'normal'
+        if(not 'lucky_times' in data[str(user_id)]):
+            data[str(user_id)]['lucky_times'] = 0
+        #幸运
+        if data[str(user_id)]["lucky_times"] >= 0  and data[str(user_id)]['buff2'] == 'lucky':
+            data[str(user_id)]["lucky_times"] += 1
+                
         #如果不在森林被困名单里
         if(user_id in stuckdata):
             if(current_time >= next_time_r):
                 data[user_id]["buff"] = "normal"
                 del stuckdata[user_id]
-                #正面buff检测逻辑
-                #没有就先加上
-                if(not 'buff2' in data[str(user_id)]):
-                    data[str(user_id)]['buff2'] = 'normal'
-                if(not 'lucky_times' in data[str(user_id)]):
-                    data[str(user_id)]['lucky_times'] = 0
-                #幸运
-                if data[str(user_id)]["lucky_times"] >= 0:
-                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)
@@ -150,15 +135,6 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
                 await message.finish("看了半天你还是没想明白这是什么东西，但你意识到不能再在原地停留了", at_sender=True)
 
             else:
-                #正面buff检测逻辑
-                #没有就先加上
-                if(not 'buff2' in data[str(user_id)]):
-                    data[str(user_id)]['buff2'] = 'normal'
-                if(not 'lucky_times' in data[str(user_id)]):
-                    data[str(user_id)]['lucky_times'] = 0
-                #幸运
-                if data[str(user_id)]["lucky_times"] >= 0:
-                    data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
                     json.dump(data, f, indent=4)   
@@ -167,15 +143,6 @@ async def outofdanger(data, user_id, message, current_time, next_time_r):
         else:
             data[user_id]["buff"] = "normal"
             data[user_id]['next_time'] = current_time.strftime("%Y-%m-%d %H:%M:%S")
-            #正面buff检测逻辑
-            #没有就先加上
-            if(not 'buff2' in data[str(user_id)]):
-                data[str(user_id)]['buff2'] = 'normal'
-            if(not 'lucky_times' in data[str(user_id)]):
-                data[str(user_id)]['lucky_times'] = 0
-            #幸运
-            if data[str(user_id)]["lucky_times"] >= 0:
-                data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, indent=4)
@@ -292,7 +259,7 @@ async def ForestStuck(user_data, user_id, message):
             if(not 'lucky_times' in user_data[str(user_id)]):
                 user_data[str(user_id)]['lucky_times'] = 0
             #幸运
-            if user_data[str(user_id)]["lucky_times"] >= 0:
+            if user_data[str(user_id)]["lucky_times"] >= 0  and user_data[str(user_id)]['buff2'] == 'lucky':
                 user_data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
@@ -333,7 +300,7 @@ async def ForestStuck(user_data, user_id, message):
                 if(not 'lucky_times' in user_data[str(user_id)]):
                     user_data[str(user_id)]['lucky_times'] = 0
                 #幸运
-                if user_data[str(user_id)]["lucky_times"] >= 0:
+                if user_data[str(user_id)]["lucky_times"] >= 0  and user_data[str(user_id)]['buff2'] == 'lucky':
                     user_data[str(user_id)]["lucky_times"] += 1
                 #写入主数据表
                 with open(user_path, 'w', encoding='utf-8') as f:
@@ -364,7 +331,7 @@ async def ForestStuck(user_data, user_id, message):
             if(not 'lucky_times' in user_data[str(user_id)]):
                 user_data[str(user_id)]['lucky_times'] = 0
             #幸运
-            if user_data[str(user_id)]["lucky_times"] >= 0:
+            if user_data[str(user_id)]["lucky_times"] >= 0  and user_data[str(user_id)]['buff2'] == 'lucky':
                 user_data[str(user_id)]["lucky_times"] += 1
             #写入主数据表
             with open(user_path, 'w', encoding='utf-8') as f:
@@ -416,13 +383,13 @@ async def ForestStuck(user_data, user_id, message):
 #三号猎场事件
 
 async def CrystalStuck(user_data, user_id, message):
-    #打开矿洞被困名单(还没想好写点什么)
+    #打开矿洞被困名单
     crystalStuckdata = {}
     with open(crystal_path, 'r', encoding='utf-8') as f:
         crystalStuckdata = json.load(f)
-    #是否拥有10个碎片
+    #是否拥有7个碎片
     if('item' in user_data[user_id]):
-        if(user_data[user_id]['item'].get('神秘碎片',0) < 10):
+        if(user_data[user_id]['item'].get('神秘碎片',0) < 7):
             await message.finish("在远古的水晶矿洞前，风轻轻吹过，岩石间传来阵阵低语。眼前的巨大门扉上镶嵌着神秘的符文，发出幽幽的光辉。你注意到面前门上的部分符文与你手上的碎片相契合\n或许......收集足够的碎片就可以打开这扇门？", at_sender=True)
     
 
@@ -468,66 +435,58 @@ async def CrystalStuck(user_data, user_id, message):
         current_time = datetime.datetime.now()
         next_time = current_time + datetime.timedelta(minutes=30)
         user_data[user_id]['next_time'] = next_time.strftime("%Y-%m-%d %H:%M:%S")
-        rnd_tool = random.randint(1,60)
+        rnd_tool = random.randint(1,100)
         #判断是否开辟道具栏
         if(not 'item' in user_data[str(user_id)]):
             user_data[str(user_id)]['item'] = {}
 
                     
         #奖励道具
-        if rnd_tool>=1 and rnd_tool<=25:
+        if rnd_tool>=1 and rnd_tool<=33:
             #如果没有，则开辟道具
             if(not '弹弓' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['弹弓'] = 0
 
-            if(user_data[user_id]['item'].get('弹弓',0) < 20):
-                user_data[user_id]['item']['弹弓'] += 1
-                with open(user_path, 'w', encoding='utf-8') as f:
-                    json.dump(user_data, f, indent=4)
-                await message.finish(f"你发现了其他探险者在此遗落的一个弹弓", at_sender=True)
-            else:
-                await message.finish(f"你发现了其他探险者在此遗落的一个弹弓，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
-        elif rnd_tool>=26 and rnd_tool<=45:
+            user_data[user_id]['item']['弹弓'] += 1
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            await message.finish(f"你发现了其他探险者在此遗落的一个弹弓", at_sender=True)
+            
+        elif rnd_tool>=34 and rnd_tool<=68:
             #如果没有，则开辟道具
             if(not '一次性小手枪' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['一次性小手枪'] = 0
-
-            if(user_data[user_id]['item'].get('一次性小手枪',0) < 20):
-                user_data[user_id]['item']['一次性小手枪'] += 1
-                with open(user_path, 'w', encoding='utf-8') as f:
-                    json.dump(user_data, f, indent=4)
-                await message.finish(f"你发现了其他探险者在此遗落的一个一次性小手枪", at_sender=True)
-            else:
-                await message.finish(f"你发现了其他探险者在此遗落的一个一次性小手枪，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
-        elif rnd_tool>=46 and rnd_tool<=55:
+            user_data[user_id]['item']['一次性小手枪'] += 1
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            await message.finish(f"你发现了其他探险者在此遗落的一个一次性小手枪", at_sender=True)
+           
+        elif rnd_tool>=69 and rnd_tool<=84:
             #如果没有，则开辟道具
             if(not '胡萝卜' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['胡萝卜'] = 0
 
-            if(user_data[user_id]['item'].get('胡萝卜',0) < 20):
-                carrot_rnd=random.randint(1,10)
-                if carrot_rnd>3:
-                    user_data[user_id]['item']['胡萝卜'] += 1
-                    with open(user_path, 'w', encoding='utf-8') as f:
-                        json.dump(user_data, f, indent=4)
-                    await message.finish(f"你发现了其他探险者在此遗落的一个胡萝卜，看起来还很新鲜，还能用。", at_sender=True)
-                else:
-                    await message.finish(f"你发现了其他探险者在此遗落的一个胡萝卜，但是看起来变质用不了了，你无奈地丢弃了这个道具", at_sender=True)
+
+            carrot_rnd=random.randint(1,10)
+            if carrot_rnd>3:
+                user_data[user_id]['item']['胡萝卜'] += 1
+                with open(user_path, 'w', encoding='utf-8') as f:
+                    json.dump(user_data, f, indent=4)
+                await message.finish(f"你发现了其他探险者在此遗落的一个胡萝卜，看起来还很新鲜，还能用。", at_sender=True)
             else:
-                await message.finish(f"你发现了其他探险者在此遗落的一个胡萝卜，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
-        elif rnd_tool>=56 and rnd_tool<=58:
+                await message.finish(f"你发现了其他探险者在此遗落的一个胡萝卜，但是看起来变质用不了了", at_sender=True)
+        
+        elif rnd_tool>=85 and rnd_tool<=86:
             #如果没有，则开辟道具
             if(not 'kid提取器' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['kid提取器'] = 0
 
-            if(user_data[user_id]['item'].get('kid提取器',0) < 20):
-                user_data[user_id]['item']['kid提取器'] += 1
-                with open(user_path, 'w', encoding='utf-8') as f:
-                    json.dump(user_data, f, indent=4)
-                await message.finish(f"你发现了其他探险者在此遗落的一个kid提取器", at_sender=True)
-            else:
-                await message.finish(f"你发现了其他探险者在此遗落的一个kid提取器，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
-        elif rnd_tool>=59 and rnd_tool<=60:
+            user_data[user_id]['item']['kid提取器'] += 1
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            await message.finish(f"你发现了其他探险者在此遗落的一个kid提取器", at_sender=True)
+            
+        elif rnd_tool>=87 and rnd_tool<=88:
             #如果没有，则开辟道具
             if(not '时间秒表' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['时间秒表'] = 0
@@ -539,18 +498,15 @@ async def CrystalStuck(user_data, user_id, message):
                 await message.finish(f"你发现了其他探险者在此遗落的一个时间秒表", at_sender=True)
             else:
                 await message.finish(f"你发现了其他探险者在此遗落的一个时间秒表，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
-        elif rnd_tool>=61 and rnd_tool<=70:
+        elif rnd_tool>=89 and rnd_tool<=100:
             #如果没有，则开辟道具
             if(not '万能解药' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['万能解药'] = 0
-
-            if(user_data[user_id]['item'].get('万能解药',0) < 20):
-                user_data[user_id]['item']['万能解药'] += 1
-                with open(user_path, 'w', encoding='utf-8') as f:
-                    json.dump(user_data, f, indent=4)
-                await message.finish(f"你发现了其他探险者在此遗落的一个万能解药", at_sender=True)
-            else:
-                await message.finish(f"你发现了其他探险者在此遗落的一个万能解药，但是你的背包放不下了，你无奈地丢弃了这个道具", at_sender=True)
+                
+            user_data[user_id]['item']['万能解药'] += 1
+            with open(user_path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, indent=4)
+            await message.finish(f"你发现了其他探险者在此遗落的一个万能解药", at_sender=True)
     #受伤事件
     if(rnd<=25):#25
         #受伤一小时，在此期间什么都干不了
@@ -567,7 +523,7 @@ async def CrystalStuck(user_data, user_id, message):
         if(not 'lucky_times' in user_data[str(user_id)]):
             user_data[str(user_id)]['lucky_times'] = 0
         #幸运
-        if user_data[str(user_id)]["lucky_times"] >= 0:
+        if user_data[str(user_id)]["lucky_times"] >= 0 and user_data[str(user_id)]['buff2'] == 'lucky':
             user_data[str(user_id)]["lucky_times"] += 1
         #写入主数据表
         with open(user_path, 'w', encoding='utf-8') as f:

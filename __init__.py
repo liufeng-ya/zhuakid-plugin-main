@@ -204,6 +204,43 @@ async def fafang_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comma
 
         await fafang_single.finish(f"给"+MessageSegment.at(user_id)+f"发放{jiangli}刺儿成功！", at_sender=True)
 
+#给某个用户设定指定刺儿
+set_single = on_command("设定", permission=GROUP, priority=1, block=True)
+@set_single.handle()
+async def set_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+
+    #得到at的人的qq号
+    arg = str(arg).split(" ")
+    user_id = arg[0]
+
+    #打开文件
+    data = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    #没有这个用户
+    if(not user_id in data):
+        await fafang_single.finish("找不到该用户信息", at_sender=True)
+
+    #有这个用户
+    try:
+        jiangli = int(arg[1])
+    except:
+        await fafang_single.finish("格式错误，请按照/设定 (用户QQ号)(数量)的格式输入！", at_sender=True)
+    else:
+        if(jiangli <= 0):
+            return
+        data[user_id]['spike'] = jiangli
+
+        #写入文件
+        with open(user_path / file_name, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+
+        await fafang_single.finish(MessageSegment.at(user_id)+f"的刺儿已设定为{jiangli}！", at_sender=True)
+
 #查询超市购买历史记录
 ck_admin_history = on_command("账单", permission=GROUP, priority=1, block=True)
 @ck_admin_history.handle()
@@ -418,13 +455,14 @@ async def zhuakid(bot: Bot, event: GroupMessageEvent):
         if(not 'lucky_times' in data[str(user_id)]):
             data[str(user_id)]['lucky_times'] = 0
         #幸运
-        if data[str(user_id)]["lucky_times"] > 0:
+        if data[str(user_id)]["lucky_times"] > 0 and data[str(user_id)]['buff2'] == 'lucky':
             #如果有中毒buff(即抓到kid无法获得刺儿)，则直接清除
             if data[str(user_id)]['buff'] == 'poisoned':
                 data[str(user_id)]['buff'] = 'normal'
             data[str(user_id)]["lucky_times"] -= 1
         else:
             data[str(user_id)]['buff2'] = 'normal'
+            data[str(user_id)]["lucky_times"] = 0
 
         #第一次抓
         if(not 'lc' in data[str(user_id)]):
@@ -1045,6 +1083,9 @@ async def buy_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
                     elif buy_item_name=='招财猫':
                         if(data[str(user_id)]['item'][buy_item_name] > 20):
                             await buy.finish("该道具已经到达数量上限啦，不能再买了！")
+                    elif buy_item_name=='时间秒表':
+                        if(data[str(user_id)]['item'][buy_item_name] > 20):
+                            await buy.finish("该道具已经到达数量上限啦，不能再买了！")
                     elif buy_item_name=='神秘碎片':
                         current_fragments = data[str(user_id)].get("buy_fragments_num", 0)
                         num_of_fragments = data[str(user_id)].get("buy_fragments_num", 0) +n
@@ -1341,7 +1382,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
 
                     #随机选择是正常抓取还是从兔类Kid里抓
                     if liechang_number=='3':
-                        if data[user_id]['item'].get('神秘碎片',0) < 10:
+                        if data[user_id]['item'].get('神秘碎片',0) < 7:
                             await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)   
                     rnd = random.randint(1,10)
                     if(rnd <= 5):
@@ -1487,7 +1528,8 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 use_item_name = command[0]   #参数1
                 arg2 = command[1]   #参数2
                 if(use_item_name.lower()=="kid提取器"):
-                    if liechang_number=='3':
+                    nums = find_kid(arg2.lower())
+                    if liechang_number=='3' or nums[2]=='3':
                         if data[str(user_id)].get("item").get('神秘碎片', 0) < 7:
                             await daoju.finish("你还未解锁通往第三猎场的道路...", at_sender=True)
                     if(data[str(user_id)].get("item").get(use_item_name, 0) > 0):
@@ -1559,19 +1601,19 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                                 await daoju.finish(f"你没有这么多{arg2.lower()}可以拿来充能了！", at_sender=True)
                         elif(nums[2]=='2'):
                             #二号猎场及其以后，按等级和编号确定
-                            data2 = open_data(user_path/f"UserList{liechang_number}.json")
+                            data2 = open_data(user_path/f"UserList2.json")
                             level_num = nums[0]+'_'+nums[1]
                             if(data2[str(user_id)].get(level_num,0) >= num_of_charge):
                                 data2[str(user_id)][level_num] -= num_of_charge
-                                save_data(user_path/f"UserList{liechang_number}.json",data2)
+                                save_data(user_path/f"UserList2.json",data2)
                             else:
                                 await daoju.finish(f"你没有这么多{arg2.lower()}可以拿来充能了！", at_sender=True)
                         elif(nums[2]=='3'):
-                            data3 = open_data(user_path/f"UserList{liechang_number}.json")
+                            data3 = open_data(user_path/f"UserList3.json")
                             level_num = nums[0]+'_'+nums[1]
                             if(data3[str(user_id)].get(level_num,0) >= num_of_charge):
                                 data3[str(user_id)][level_num] -= num_of_charge
-                                save_data(user_path/f"UserList{liechang_number}.json",data3)
+                                save_data(user_path/f"UserList3.json",data3)
                             else:
                                 await daoju.finish(f"你没有这么多{arg2.lower()}可以拿来充能了！", at_sender=True)
                         if nums[0]=='5':
