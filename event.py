@@ -172,8 +172,24 @@ async def PlainStuck(user_data, user_id, message):
     ######其他事件#####
     rnd = random.randint(1,1000)
     
+    '''
+    #测试用的模拟代码
+    rnd_times = 0
+    fragments=0
+    items=0
+    while rnd_times<10000:
+        rnd = random.randint(1,1000)
+        if 20<rnd<=30:
+            fragments+=1
+        if 30<rnd<=40:
+            items+=1
+        rnd_times+=1
+    t1=str(fragments)
+    t2=str(items)
+    await message.finish(f"10000次模拟成功，一共获得了{t1}次碎片，{t2}次幸运药水", at_sender=True)
+    '''
     #遇到金矿
-    if(rnd <= 25):
+    if(rnd <= 20):
         #奖励刺儿
         spike = random.randint(100,200)
         user_data[user_id]['spike'] += spike
@@ -350,7 +366,7 @@ async def ForestStuck(user_data, user_id, message):
 
             #发送消息
             await message.finish(random.choice(text)+"你需要原地等待一个小时", at_sender=True)
-        if(rnd<=255):
+        if(rnd<=260):
             #判断是否开辟道具栏
             if(not 'item' in user_data[str(user_id)]):
                 user_data[str(user_id)]['item'] = {}

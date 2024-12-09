@@ -223,13 +223,13 @@ async def set_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
 
     #没有这个用户
     if(not user_id in data):
-        await fafang_single.finish("找不到该用户信息", at_sender=True)
+        await set_single.finish("找不到该用户信息", at_sender=True)
 
     #有这个用户
     try:
         jiangli = int(arg[1])
     except:
-        await fafang_single.finish("格式错误，请按照/设定 (用户QQ号)(数量)的格式输入！", at_sender=True)
+        await set_single.finish("格式错误，请按照/设定 (用户QQ号)(数量)的格式输入！", at_sender=True)
     else:
         if(jiangli <= 0):
             return
@@ -239,7 +239,46 @@ async def set_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandA
         with open(user_path / file_name, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4)
 
-        await fafang_single.finish(MessageSegment.at(user_id)+f"的刺儿已设定为{jiangli}！", at_sender=True)
+        await set_single.finish(MessageSegment.at(user_id)+f"的刺儿已设定为{jiangli}！", at_sender=True)
+
+#给某个用户扣除刺儿
+deduct_single = on_command("扣除", permission=GROUP, priority=1, block=True)
+@deduct_single.handle()
+async def deduct_handle(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    #判断是不是管理员账号
+    if(str(event.user_id)!=bot_owner_id):
+        return
+
+    #得到at的人的qq号
+    arg = str(arg).split(" ")
+    user_id = arg[0]
+
+    #打开文件
+    data = {}
+    with open(user_path / file_name, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    #没有这个用户
+    if(not user_id in data):
+        await deduct_single.finish("找不到该用户信息", at_sender=True)
+
+    #有这个用户
+    try:
+        jiangli = int(arg[1])
+    except:
+        await deduct_single.finish("格式错误，请按照/设定 (用户QQ号)(数量)的格式输入！", at_sender=True)
+    else:
+        if(jiangli <= 0):
+            return
+        data[user_id]['spike'] -= jiangli
+        if data[user_id]['spike'] < 0:
+            data[user_id]['spike'] = 0
+
+        #写入文件
+        with open(user_path / file_name, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
+
+        await deduct_single.finish(f"已扣除"+MessageSegment.at(user_id)+f"{jiangli}刺儿！", at_sender=True)
 
 #查询超市购买历史记录
 ck_admin_history = on_command("账单", permission=GROUP, priority=1, block=True)
@@ -1336,8 +1375,9 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                 if(data.get(user_id).get('item').get('时间秒表',0) > 0):
                     current_time = datetime.datetime.now()
                     next_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('next_time'), "%Y-%m-%d %H:%M:%S")
+                    work_end_time_r = datetime.datetime.strptime(data.get(str(user_id)).get('work_end_time'), "%Y-%m-%d %H:%M:%S")
                     #首先判断有没有冷却
-                    if(current_time < next_time_r):
+                    if(current_time < next_time_r or current_time < work_end_time_r):
                         next_time = get_time_from_data(data[str(user_id)])
                         try:
                             next_clock_time = datetime.datetime.strptime(data.get(str(user_id)).get('next_clock_time'), "%Y-%m-%d %H:%M:%S")
@@ -1351,6 +1391,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                             next_clock_time_r = current_time + datetime.timedelta(minutes=30)
                             data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
                             data[str(user_id)]['next_charge_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
+                            data[str(user_id)]['work_end_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
                             data[str(user_id)]['next_clock_time'] = next_clock_time_r.strftime("%Y-%m-%d %H:%M:%S")
                             if(data[str(user_id)]["item"].get(use_item_name)<=0): del data[str(user_id)]["item"][use_item_name]
                             #写入文件
