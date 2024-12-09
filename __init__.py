@@ -54,7 +54,7 @@ shop_open_img = Path() / "data" / "Shop" / "开张图.png"
 shop_work_img = Path() / "data" / "Shop" / "营业图.png"
 
 #更新日志
-update_text = "整改一些事情啊。"
+update_text = "详细信息请前往抓kid wiki\n https://docs.qq.com/smartsheet/DVUZtQWlNTG1zZVhN \n进行查看"
 #管理员ID
 bot_owner_id = "2153454883"
 
@@ -300,8 +300,26 @@ async def timeClear_Admin(bot: Bot, event: GroupMessageEvent, arg: Message = Com
     with open(user_path / file_name, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=4)
     await admin_timeClear.finish(MessageSegment.at(user_id)+f"的冷却已清除", at_sender=True)
-                
-    
+
+#手动进行商店的补货(刷新)
+admin_Restock = on_command("补货", permission=GROUP, priority=1, block=True)
+@admin_Restock.handle()
+async def Restock_Admin(bot: Bot, event: GroupMessageEvent, arg: Message = CommandArg()):
+    shop_data ={}
+    current_date = datetime.date.today()  #返回今天日期
+    last_date = current_date - datetime.timedelta(days=1)
+    if(os.path.exists(shop_database)):
+        #打开商店仓库
+        with open(shop_database, 'r', encoding='utf-8') as f:
+            shop_data = json.load(f)
+    else:
+        await admin_Restock.finish("商店不存在。", at_sender=True)       
+
+    shop_data["date"] = last_date.strftime("%Y-%m-%d %H:%M:%S")
+    #写入文件
+    with open(shop_database, 'w', encoding='utf-8') as f:
+        json.dump(shop_data, f, indent=4)
+    await admin_Restock.finish("补货已完成", at_sender=True)
 
 ##########################玩家游玩指令#########################
 
@@ -1307,7 +1325,7 @@ async def daoju_handle(bot: Bot, event: GroupMessageEvent, arg: Message = Comman
                             data[str(user_id)]["item"][use_item_name] -= 1 
                             #清除全部冷却时长
                             next_time_r = current_time + datetime.timedelta(seconds=1)
-                            next_clock_time_r = current_time + datetime.timedelta(minutes=60)
+                            next_clock_time_r = current_time + datetime.timedelta(minutes=30)
                             data[str(user_id)]['next_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
                             data[str(user_id)]['next_charge_time'] = next_time_r.strftime("%Y-%m-%d %H:%M:%S")
                             data[str(user_id)]['next_clock_time'] = next_clock_time_r.strftime("%Y-%m-%d %H:%M:%S")

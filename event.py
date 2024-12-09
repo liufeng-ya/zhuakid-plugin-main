@@ -427,7 +427,7 @@ async def CrystalStuck(user_data, user_id, message):
     if user_data[user_id]['buff2'] == 'lucky':
         while True:
             rnd_value = random.randint(1, 100)
-            if 1 <= rnd_value <= 30 or 46 <= rnd_value <= 100:
+            if 1 <= rnd_value <= 35 or 51 <= rnd_value <= 100:
                 break
         rnd = rnd_value
     #抓到了特殊的道具
@@ -502,7 +502,7 @@ async def CrystalStuck(user_data, user_id, message):
             #如果没有，则开辟道具
             if(not '万能解药' in user_data[str(user_id)]['item']):
                 user_data[str(user_id)]['item']['万能解药'] = 0
-                
+
             user_data[user_id]['item']['万能解药'] += 1
             with open(user_path, 'w', encoding='utf-8') as f:
                 json.dump(user_data, f, indent=4)
@@ -542,7 +542,7 @@ async def CrystalStuck(user_data, user_id, message):
         await message.finish(random.choice(text)+"你需要原地等待90分钟", at_sender=True)
         
     #挖矿事件
-    if(rnd<=30): #30
+    if(rnd<=35): #35
         #首先玩家没有buff/debuff时才会随机触发
         if user_data[user_id]['buff'] != 'unlucky':
             #遇到水晶矿
@@ -577,7 +577,7 @@ async def CrystalStuck(user_data, user_id, message):
         else:
             return
     #debuff事件
-    if(rnd<=45): #45
+    if(rnd<=50): #50
         #首先玩家没有buff/debuff时才会随机触发
         if user_data[user_id]['buff'] == 'normal':
             #判断是否开辟恢复时间栏
